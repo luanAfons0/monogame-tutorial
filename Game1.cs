@@ -1,109 +1,141 @@
 ﻿using System;
+using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 
-namespace monogame_tutorial;
-
-public class Game1 : Game
+namespace monogame_tutorial
 {
-    private GraphicsDeviceManager _graphics;
-    private SpriteBatch _spriteBatch;
 
-    public Player Player;
-    public Texture2D JoiaTexture;
 
-    public bool isSpacePressed;
-    public bool isLeftMouseButtonPressed;
 
-    public Game1()
+    public class Game1 : Game
     {
-        _graphics = new GraphicsDeviceManager(this);
-        Content.RootDirectory = "Content";
-        IsMouseVisible = true;
-    }
+        private GraphicsDeviceManager _graphics;
+        private SpriteBatch _spriteBatch;
 
-    protected override void Initialize()
-    {
-        // TODO: Add your initialization logic here
+        private Texture2D _joiaTexture;
+        public Player Player1;
+        public Player Player2;
 
-        base.Initialize();
-    }
+        // kill player 2
+        // public bool isPlayer2Dead;
 
-    protected override void LoadContent()
-    {
-        _spriteBatch = new SpriteBatch(GraphicsDevice);
-        JoiaTexture = Content.Load<Texture2D>("joia");
-
-        Player = new Player(JoiaTexture, new Vector2(10,10),Color.White);
-
-        // TODO: use this.Content to load your game content here
-    }
-
-    protected override void Update(GameTime gameTime)
-    {
-        if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
-            Exit();
-
-        if (!isLeftMouseButtonPressed && Mouse.GetState().LeftButton == ButtonState.Pressed)
+        public Game1()
         {
-            Console.WriteLine("Clicou com o botão esquerdo");
-            Console.WriteLine("Posição x do click:" + Mouse.GetState().X);
-            Console.WriteLine("Posição y do click:" + Mouse.GetState().Y);
-            isLeftMouseButtonPressed = true;
-        } ;
-        
-        if (Mouse.GetState().LeftButton == ButtonState.Released)
-        {
-            isLeftMouseButtonPressed = false;
-        }
-        
-        if (!isSpacePressed && Keyboard.GetState().IsKeyDown(Keys.Space))
-        {
-            Console.WriteLine("Apertou espaço!");
-            isSpacePressed = true;
+            _graphics = new GraphicsDeviceManager(this);
+            Content.RootDirectory = "Content";
+            IsMouseVisible = true;
         }
 
-        if (Keyboard.GetState().IsKeyUp(Keys.Space))
+        protected override void Initialize()
         {
-            isSpacePressed = false;
+            base.Initialize();
         }
 
-        // TODO: Add your update logic here
-        
-        if (Keyboard.GetState().IsKeyDown(Keys.W))
+        protected override void LoadContent()
         {
-            Player.Update(Player.Position.X,Player.Position.Y-1);
-        }
-        
-        if (Keyboard.GetState().IsKeyDown(Keys.A))
-        {
-            Player.Update(Player.Position.X-1,Player.Position.Y);
-        }
-        
-        if (Keyboard.GetState().IsKeyDown(Keys.S))
-        {
-            Player.Update(Player.Position.X,Player.Position.Y+1);
-        }
-        
-        if (Keyboard.GetState().IsKeyDown(Keys.D))
-        {
-            Player.Update(Player.Position.X+1,Player.Position.Y);
+            _spriteBatch = new SpriteBatch(GraphicsDevice);
+            _joiaTexture = Content.Load<Texture2D>("joia");
+
+            Player1 = new Player(_joiaTexture, new Vector2(10, 10), Color.White);
+            Player2 = new Player(_joiaTexture, new Vector2(500, 10), Color.Red);
+
         }
 
-        base.Update(gameTime);
-    }
+        protected override void Update(GameTime gameTime)
+        {
+            float changeY = 0;
+            if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
+                Exit();
 
-    protected override void Draw(GameTime gameTime)
-    {
-        GraphicsDevice.Clear(Color.CornflowerBlue);
+            // Player 1 logic
+            // moving y
+            if (Keyboard.GetState().IsKeyDown(Keys.W))
+            {
+                changeY -= 3;
+                Player1.Update(Player1.Position.X, Player1.Position.Y - 3);
+            }
 
-        // TODO: Add your drawing code here
+            if (Keyboard.GetState().IsKeyDown(Keys.S))
+            {
+                changeY += 3;
+                Player1.Update(Player1.Position.X, Player1.Position.Y + 3);
+            }
 
-        _spriteBatch.Begin();
-        _spriteBatch.Draw(Player.Texture, new Vector2(Player.Position.X, Player.Position.Y), Color.White);
-        _spriteBatch.End();
-        
-        base.Draw(gameTime);
+            // Stops player 1 to enter player 2 Y
+            if (Player1.Rect.Intersects(Player2.Rect))
+            {
+                Player1.Update(Player1.Position.X, Player1.Position.Y -= changeY);
+            }
+
+            float changeX = 0;
+
+            // moving x
+            if (Keyboard.GetState().IsKeyDown(Keys.A))
+            {
+                changeX -= 3;
+                Player1.Update(Player1.Position.X - 3, Player1.Position.Y);
+            }
+
+            if (Keyboard.GetState().IsKeyDown(Keys.D))
+            {
+                changeX += 3;
+                Player1.Update(Player1.Position.X + 3, Player1.Position.Y);
+            }
+
+            // Stops player 1 to enter player 2 X
+            if (Player1.Rect.Intersects(Player2.Rect))
+            {
+                Player1.Update(Player1.Position.X -= changeX, Player1.Position.Y);
+            }
+
+            // Player 2 logic
+            if (Keyboard.GetState().IsKeyDown(Keys.Up))
+            {
+                Player2.Update(Player2.Position.X, Player2.Position.Y - 1);
+            }
+
+            if (Keyboard.GetState().IsKeyDown(Keys.Left))
+            {
+                Player2.Update(Player2.Position.X - 1, Player2.Position.Y);
+            }
+
+            if (Keyboard.GetState().IsKeyDown(Keys.Down))
+            {
+                Player2.Update(Player2.Position.X, Player2.Position.Y + 1);
+            }
+
+            if (Keyboard.GetState().IsKeyDown(Keys.Right))
+            {
+                Player2.Update(Player2.Position.X + 1, Player2.Position.Y);
+            }
+
+            // Collision logic
+            // kill player 2
+            // if (Player1.Rect.Intersects(Player2.Rect))
+            // {
+            //     isPlayer2Dead = true;
+            // }
+
+            base.Update(gameTime);
+        }
+
+        protected override void Draw(GameTime gameTime)
+        {
+            GraphicsDevice.Clear(Color.CornflowerBlue);
+
+            _spriteBatch.Begin();
+            _spriteBatch.Draw(Player1.Texture, new Vector2(Player1.Position.X, Player1.Position.Y), Player1.Color);
+            // kill player 2
+            // if (!isPlayer2Dead)
+            // {
+            //     _spriteBatch.Draw(Player2.Texture, new Vector2(Player2.Position.X, Player2.Position.Y), Player2.Color);
+            // }
+            _spriteBatch.Draw(Player2.Texture, new Vector2(Player2.Position.X, Player2.Position.Y), Player2.Color);
+            _spriteBatch.End();
+
+            base.Draw(gameTime);
+        }
     }
 }
