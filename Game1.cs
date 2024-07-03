@@ -1,6 +1,8 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using Microsoft.Xna.Framework.Audio;
+using Microsoft.Xna.Framework.Media;
 
 namespace monogame_tutorial
 {
@@ -8,6 +10,8 @@ namespace monogame_tutorial
     {
         private GraphicsDeviceManager _graphics;
         private SpriteBatch _spriteBatch;
+        SoundEffect song;
+        Song katanaSong;
 
         public Game1()
         {
@@ -27,6 +31,11 @@ namespace monogame_tutorial
         {
             _spriteBatch = new SpriteBatch(GraphicsDevice);
 
+            song = Content.Load<SoundEffect>("piano");
+            song.Play();
+
+            katanaSong = Content.Load<Song>("katana");
+
             // TODO: use this.Content to load your game content here
         }
 
@@ -36,6 +45,11 @@ namespace monogame_tutorial
                 Exit();
 
             // TODO: Add your update logic here
+
+            if (Keyboard.GetState().IsKeyDown(Keys.Space))
+            {
+                MediaPlayer.Play(katanaSong);
+            }
 
             base.Update(gameTime);
         }
